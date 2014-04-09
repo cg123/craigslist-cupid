@@ -5,8 +5,13 @@ craigslist: Functions for scraping Craigslist postings.
 """
 
 import dateutil.parser
+import unicodedata
 import requests
 import bs4
+
+
+def sanitize(text):
+	return unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
 
 
 class Posting(object):
@@ -15,7 +20,7 @@ class Posting(object):
 	"""
 	def __init__(self, url, title=None):
 		self.url = url
-		self._title = title.strip()
+		self._title = sanitize(title).strip()
 		self._body = None
 		self._posted = None
 		self.id = int(url.split('/')[-1].split('.')[0])
@@ -38,11 +43,16 @@ class Posting(object):
 			self._posted = -1
 			return False
 
-		self._title = soup.title.string.strip()
+		self._title = sanitize(soup.title.string).strip()
 
 		postingbody = soup.find('section', id='postingbody')
 		if postingbody:
-			self._body = ' '.join(map(str, postingbody.contents)).replace('<br/>','\n').strip()
+			try:
+				self._body = ' '.join([sanitize(unicode(x)) for x in postingbody.contents]).replace('<br/>','\n').strip()
+			except UnicodeEncodeError, e:
+				print self.url
+				print postingbody
+				raise
 		else:
 			self._body = None
 
