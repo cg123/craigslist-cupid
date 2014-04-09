@@ -3,58 +3,9 @@
 # Charles O. Goddard
 
 import sys
-
-import requests
 import numpy
-import bs4
 
-
-def postings(city='boston', section='cas'):
-	'''
-	List all craigslist postings for a given city and section.
-
-	Returns a generator yielding (url, title) pairs.
-	'''
-	base_url = 'http://{0}.craigslist.org/'.format(city)
-	idx = 0
-	while True:
-		# Get next hundred postings
-		url = '{0}/{1}/index{2:03}.html'.format(base_url, section, idx * 100)
-		r = requests.get(url)
-		if r.status_code != 200:
-			raise ValueError(r.status_code)
-
-		# Parse HTML
-		soup = bs4.BeautifulSoup(r.text, 'html5lib')
-
-		# Find and yield postings
-		for span in soup.find_all('span', 'pl'):
-			a = span.a
-			url = a.get('href')
-			if not url.startswith(base_url):
-				url = base_url + url
-			yield url, a.string
-
-		idx += 1
-
-
-def fetch_post(url):
-	r = requests.get(url)
-	if r.status_code != 200:
-		raise ValueError(r.status_code)
-	soup = bs4.BeautifulSoup(r.text, 'lxml')
-	body = soup.find('section', id='postingbody')
-	for section in soup.find_all('section'):
-		if section.get('id') == 'postingbody':
-			return '\n'.join(map(str, section.contents)).replace('<br/>','\n')
-
-	print '!!', url
-	for section in soup.find_all('section'):
-		print section.get('id')
-		print '!'*64
-		print
-	print 'done'
-	return ''
+import craigslist
 
 
 def tokenize(text):
@@ -102,29 +53,25 @@ def vectorize(text, word2idx):
 def main(city='boston'):
 	# Fetch a corpus of postings
 	corpus = []
-	for i, (url, title) in enumerate(postings(city)):
-		body = fetch_post(url)
-		if not title:
-			print '!!! no title -', title, url
-		elif not body:
-			print '!!! no body -', title, url
-		else:
-			corpus.append(title + '\n' + body)
+	for i, post in enumerate(craigslist.postings(city)):
+		corpus.append(post)
 		if i >= 49: break
 
 	print 'Fetched', len(corpus), 'posts'
 
-	freq = termfreq('\n'.join(corpus))
+	all_text = '\n'.join(c.title + '\n' + c.body for c in corpus)
+
+	freq = termfreq(all_text)
 	words = sorted(((freq, word) for word, freq in freq.items()), reverse=True)
 
 	print 'Top 15 most popular words:'
 	for i in range(15):
 		print '{0} ({1})'.format(words[i][1], words[i][0])
 
-	word2idx = dict((word, idx) for idx, (freq, word) in enumerate(words))
-	df = vectorize('\n'.join(corpus), word2idx)
+	word2idx = dict((word, idx) for idx, (freq, word) in enumerate(sorted(words, key=lambda (freq, word): -freq)))
+	df = vectorize(all_text, word2idx)
 
-	vectors = [vectorize(post, word2idx) / df for post in corpus]
+	vectors = [vectorize(post.body, word2idx) / df for post in corpus]
 	print vectors
 
 
