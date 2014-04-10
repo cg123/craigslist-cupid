@@ -46,12 +46,6 @@ def main(city='boston', section='cas'):
 	num_samples, num_features = tfidf.shape
 	print '{0} samples, {1} features'.format(num_samples, num_features)
 
-	# similarities =  (X * X.T).A - numpy.eye(len(corpus))
-	# for i, post in enumerate(corpus):
-	# 	other_idx = numpy.argmax(similarities[i])
-	# 	other_post = corpus[other_idx]
-	# 	print str(post), '->', str(other_post)
-
 	matches = []
 
 	for i, post in enumerate(corpus):
