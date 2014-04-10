@@ -4,15 +4,29 @@
 
 import sys
 import numpy
+import itertools
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 
 import craigslist
 
 
+def all_personals(city='boston'):
+	generators = []
+	for a in 'wm':
+		for b in 'mw':
+			print a+'4'+b
+			generators.append((craigslist.postings(city, a+'4'+b), a+'4'+b))
+	while True:
+		for g, code in generators:
+			posting = next(g)
+			posting._title = posting._title + ' - ' + code
+			yield posting
+
+
 def main(city='boston', section='cas'):
 	# Fetch a corpus of postings
 	corpus = []
-	for i, post in enumerate(craigslist.postings(city, section)):
+	for i, post in enumerate(all_personals()): #craigslist.postings(city, section)):
 		corpus.append(post)
 		if i >= 99: break
 

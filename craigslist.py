@@ -43,7 +43,8 @@ class Posting(object):
 			self._posted = -1
 			return False
 
-		self._title = sanitize(soup.title.string).strip()
+		if self._title is None:
+			self._title = sanitize(soup.title.string).strip()
 
 		postingbody = soup.find('section', id='postingbody')
 		if postingbody:
