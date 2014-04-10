@@ -14,8 +14,8 @@ def all_personals(city='boston'):
 	generators = []
 	for a in 'wm':
 		for b in 'mw':
-			print a+'4'+b
 			generators.append((craigslist.postings(city, a+'4'+b), a+'4'+b))
+
 	while True:
 		for g, code in generators:
 			posting = next(g)
