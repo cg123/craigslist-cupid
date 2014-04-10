@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import craigslist
 
 
-def main(city='boston', section='mis'):
+def main(city='boston', section='cas'):
 	# Fetch a corpus of postings
 	corpus = []
 	for i, post in enumerate(craigslist.postings(city, section)):
