@@ -85,7 +85,7 @@ def main(city='boston', section='cas'):
 
 	print
 	for i, (score, post, other) in enumerate(matches):
-		print '{}. {} {} -> {}'.format(i + 1, score, post, other)
+		print '{}. {}\n{}\n{}\n'.format(i + 1, score, post, other)
 	print
 
 
