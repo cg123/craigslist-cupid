@@ -83,7 +83,7 @@ class Posting(object):
 		return '{!s}({!r})'.format(type(self).__name__, self.url)
 
 	def __str__(self):
-		return '{} ({})'.format(self.title, self.id)
+		return '{} ({})'.format(self.title, self.url)
 
 
 def postings(location='boston', section='cas'):
